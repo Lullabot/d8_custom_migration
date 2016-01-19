@@ -1,0 +1,31 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - book
+    - migrate_drupal
+id: d7_book
+label: Books
+migration_tags:
+  - Drupal 7
+source:
+  plugin: book
+  database_state_key: migrate_upgrade_7
+process:
+  nid: nid
+  'book/bid': bid
+  'book/weight': weight
+  'book/pid':
+    -
+      plugin: skip_on_empty
+      method: process
+      source: plid
+    -
+      plugin: migration
+      migration: d7_book
+destination:
+  plugin: book
+migration_dependencies:
+  required:
+    - d7_node:*
+    - menu_links
