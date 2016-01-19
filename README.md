@@ -52,10 +52,20 @@ As you're debugging, the migration you're trying to fix will get stuck and never
 drush php-eval 'var_dump(Drupal::keyValue("migrate_status")->set('d7_field_formatter_settings', 0))'
 ```
 
-It is possible to roll back and re-run the migration, but field configuration won't every really roll back, only content. If you need to re-do a field
+It is possible to roll back and re-run the migration, but field configuration won't ever really roll back, only content. If you need to re-do a field
 migration you'll need to drop the database and start over. It's best to create a database dump right before you start working on the migration that you
 can reload when this happens.
 
+I used three core patches as well:
+
+A patch to link image fields to their related images. Without this patch images migrate in and image fields are created, but they all appear to be empty:
+- https://www.drupal.org/files/issues/2604484-33.patch
+
+A patch to migrate D7 entityreference fields, which includes some code needed to migrate node reference field settings:
+- https://www.drupal.org/files/issues/2611066-9.patch
+
+A patch to pull the book navigation/hierarchy in, without it you get book pages but no book structure:
+- https://www.drupal.org/files/issues/upgrade_path_for_book_7_x-2409435-11.patch
 
 
 
