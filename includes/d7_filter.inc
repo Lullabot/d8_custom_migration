@@ -58,4 +58,17 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
       }
     }
   }
+
+  // Update taxonomy term description to use the new D8 formats.
+  if (substr($migration->id(), 0, 16) == 'd7_taxonomy_term') {
+    $value = $row->getSourceProperty('description');
+    $format = $row->getSourceProperty('format');
+    if (!empty($value) && !empty($format)) {
+      $row->setSourceProperty('format', $format_map[$format]);
+    }
+    elseif (!empty($value) && empty($format)) {
+      $row->setSourceProperty('format', $format_map[1]);
+    }
+  }
+
 }
