@@ -47,8 +47,9 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
   $text_fields = array(
     'body',
     'field_description',
+    'field_gallery_image_original',
   );
-  // This should include all entities that have formatted text fields on them, on this site it's only nodes.
+  // Update nodes to use the new D8 formats.
   if (substr($migration->id(), 0, 9) == 'd7_node__') {
     foreach ($text_fields as $text_field) {
       $value = $row->getSourceProperty($text_field);

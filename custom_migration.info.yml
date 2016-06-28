@@ -7,6 +7,5 @@ dependencies:
   - migrate_drupal
   - migrate_tools
   - migrate_upgrade
-  - devel
-  - kint
+  - migrate_plus
 

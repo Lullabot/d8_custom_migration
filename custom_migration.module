@@ -19,25 +19,25 @@ function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $
 
   // Comment out anything not needed, or add more.
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_filter');
+  \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_filter');
   custom_migration_filter($row, $source, $migration);
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_block');
+  \Drupal::moduleHandler()->loadInclude(('custom_migration', 'inc', '/includes/d7_block');
   custom_migration_block($row, $source, $migration);
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_node_reference');
+  \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_node_reference');
   custom_migration_node_reference($row, $source, $migration);
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_address');
+  \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_address');
   custom_migration_address($row, $source, $migration);
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_link');
+  \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_link');
   custom_migration_link($row, $source, $migration);
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_geofield');
+  \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_geofield');
   custom_migration_geofield($row, $source, $migration);
 
-  module_load_include('inc', 'custom_migration', 'includes/d7_geolocation');
+  \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_geolocation');
   custom_migration_geolocation($row, $source, $migration);
 
   // Skip fields that don't work or will not be needed.

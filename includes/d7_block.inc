@@ -37,20 +37,36 @@ function custom_migration_block(Row $row, MigrateSourceInterface $source, Migrat
   );
 
   if ($migration->id() == 'd7_block') {
+
+    // Don't automatically migrate all blocks.
     if (!in_array($row->getSourceProperty('module'), $skip_modules)) {
       // This is a block in the source's active theme.
       if ($row->getSourceProperty('theme') == $row->getSourceProperty('default_theme')) {
+        $process = $migration->getProcess();
+        //drush_print_r($process);
         $row->setSourceProperty('theme', $new_theme);
         $row->setSourceProperty('default_theme', $new_theme);
         $row->setSourceProperty('admin_theme', $new_admin_theme);
+        drush_print_r('KEEP: block.block.' . $row->getSourceProperty('theme') . '.' . $row->getSourceProperty('module') . '.' . $row->getSourceProperty('delta'));
       }
       // This is a block from some other theme.
       else {
+        //drush_print_r($row);
+        $process = $migration->getProcess();
+        unset($process['plugin'][0]);
+        unset($process['plugin'][1]);
+        $process['plugin'][2]['source'] = 'visibility';
+        $migration->setProcess($process);
         return FALSE;
       }
     }
     // This is a block from a module we want to skip in D8.
     else {
+      $process = $migration->getProcess();
+      unset($process['plugin'][0]);
+      unset($process['plugin'][1]);
+      $process['plugin'][2]['source'] = 'visibility';
+      $migration->setProcess($process);
       return FALSE;
     }
   }
