@@ -61,15 +61,12 @@ It is possible to roll back and re-run the migration, but field configuration wo
 migration you'll need to drop the database and start over. It's best to create a database dump right before you start working on the migration that you
 can reload when this happens.
 
-I used three core patches as well:
-
-A patch to link image fields to their related images. Without this patch images migrate in and image fields are created, but they all appear to be empty:
-- https://www.drupal.org/files/issues/2604484-33.patch
+I used one core patch as well, and it is required for the code to import references:
 
 A patch to migrate D7 entityreference fields, which includes some code needed to migrate node reference field settings:
 - https://www.drupal.org/files/issues/2611066-9.patch
 
-A patch to pull the book navigation/hierarchy in, without it you get book pages but no book structure. I actually just added code to this module to replicate
+I also needed a patch to pull the book navigation/hierarchy in, without it you get book pages but no book structure. I actually just added code to this module to replicate
 what this patch does, so if you use this module you won't need this patch:
 - https://www.drupal.org/files/issues/upgrade_path_for_book_7_x-2409435-11.patch
 
