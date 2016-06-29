@@ -2,10 +2,11 @@ name: Custom Migration
 type: module
 description: Custom migration code to clean up things not handled automatically by core migration.
 core: 8.x
+package: Custom
 dependencies:
+  - book
   - migrate
   - migrate_drupal
   - migrate_tools
-  - migrate_upgrade
   - migrate_plus
 

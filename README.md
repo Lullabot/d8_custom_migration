@@ -10,6 +10,11 @@ source data and alter the migration process steps. Each of the include files nee
 for the specific site, identifying the particular field types and field names that should be touched.
 These can also be used as examples for other fields you might need to migrate.
 
+The hook_migrate_prepare_row() is provided by the Migrate Plus module, so that is required for this to work.
+You also need to be able to run drush migrate-upgrade. That will eventually be available in Drush 8
+core, and may already be there, depending on what version of Drush you are running. If it's not, you
+can use the Migrate Upgrade module to provide it.
+
 A common series of steps would be:
 
 - Create a new D8 database.
@@ -17,7 +22,7 @@ A common series of steps would be:
  - Migrate
  - Migrate Drupal
  - Migrate Tools
- - Migrate Upgrade
+ - Migrate Plus
  - Devel
  - Kint
  - All field, content, widget, and formatter modules needed for the final site
