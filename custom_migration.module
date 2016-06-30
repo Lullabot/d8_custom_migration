@@ -9,6 +9,8 @@ use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Entity\MigrationInterface;
 
+define('CUSTOM_MIGRATION_PREFIX', 'upgrade_');
+
 /**
  * Implementation of hook_migrate_prepare_row().
  */
@@ -44,18 +46,18 @@ function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $
   $skip = array(
     'field_view',
   );
-  if ($migration->id() == 'd7_field') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
     if (in_array($row->getSourceProperty('field_name'), $skip)) {
       return FALSE;
     }
   }
-  if ($migration->id() == 'd7_field_instance') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field_instance') {
     if (in_array($row->getSourceProperty('field_name'), $skip)) {
       return FALSE;
     }
   }
 
-  if ($migration->id() == 'd7_field_formatter_settings') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field_formatter_settings') {
 
     // Skip broken formatters.
     // This is a place to skip or change formatters that are creating problems.

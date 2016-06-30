@@ -10,13 +10,13 @@ use Drupal\migrate\Entity\MigrationInterface;
 function custom_migration_geolocation(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
   // Map D7 geolocation_latlng to D8 geolocation.
-  if ($migration->id() == 'd7_field') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
     $process = $migration->getProcess();
     $process['type'][0]['map']['geolocation_latlng'] = 'geolocation';
     $migration->setProcess($process);
   }
 
-  if ($migration->id() == 'd7_field_instance_widget_settings') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field_instance_widget_settings') {
 
     // Map the changes in widget names. This does not update widget settings.
     // They have to be updated manually after migration.
@@ -34,7 +34,7 @@ function custom_migration_geolocation(Row $row, MigrateSourceInterface $source, 
     }
   }
 
-  if ($migration->id() == 'd7_field_formatter_settings') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field_formatter_settings') {
 
     // Map the changes in formatter names. This does not update formatter settings.
     // They have to be updated manually after migration.
@@ -57,7 +57,8 @@ function custom_migration_geolocation(Row $row, MigrateSourceInterface $source, 
 
   // Update all the entity migrations that have geo fields, on this site it's only nodes.
   // This will pick up both the main and the revision migrations.
-  if (substr($migration->id(), 0, 9) == 'd7_node__') {
+  $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
+  if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {
     // List all the geofield field names.
     $geofields = array(
       'field_geolocation',

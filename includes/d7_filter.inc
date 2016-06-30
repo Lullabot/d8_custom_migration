@@ -23,7 +23,7 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
   );
 
   // Switch to static map instead of straight pass-through.
-  if ($migration->id() == 'd7_filter_format') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_filter_format') {
     $process = $migration->getProcess();
     if (array_key_exists('format', $process)) {
       $process['format'][0]['plugin'] = 'static_map';
@@ -35,7 +35,7 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
   // Set custom blocks to use the new D8 format.
   // They should be picking it up from the filter migration as adjusted above,
   // but that isn't working, so just set the right value.
-  if ($migration->id() == 'd7_custom_block') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_custom_block') {
     $value = $row->getSourceProperty('format');
     $row->setSourceProperty('format', $format_map[$value]);
     $process = $migration->getProcess();
@@ -50,7 +50,8 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
     'field_gallery_image_original',
   );
   // Update nodes to use the new D8 formats.
-  if (substr($migration->id(), 0, 9) == 'd7_node__') {
+  $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
+  if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {
     foreach ($text_fields as $text_field) {
       $value = $row->getSourceProperty($text_field);
       if (!empty($value) && $format = $value[0]['format']) {
@@ -61,7 +62,7 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
   }
 
   // Update taxonomy term description to use the new D8 formats.
-  if (substr($migration->id(), 0, 16) == 'd7_taxonomy_term') {
+  if (substr($migration->id(), 0, 16) == CUSTOM_MIGRATION_PREFIX . 'd7_taxonomy_term') {
     $value = $row->getSourceProperty('description');
     $format = $row->getSourceProperty('format');
     if (!empty($value) && !empty($format)) {

@@ -8,13 +8,13 @@
 function custom_migration_node_reference(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
   // Convert node_reference fields into entity_reference fields.
-  if ($migration->id() == 'd7_field') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
     $process = $migration->getProcess();
     $process['type'][0]['map']['node_reference'] = 'entity_reference';
     $migration->setProcess($process);
   }
 
-  if ($migration->id() == 'd7_field_instance') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field_instance') {
 
     // Transform node_reference settings to the format expected by entity_reference.
     // Requires patch from https://www.drupal.org/files/issues/2611066-9.patch to make
@@ -33,7 +33,7 @@ function custom_migration_node_reference(Row $row, MigrateSourceInterface $sourc
     }
   }
 
-  if ($migration->id() == 'd7_field_instance_widget_settings') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX + 'd7_field_instance_widget_settings') {
 
     // Map the changes in widget names. This does not update widget settings.
     // They have to be updated manually after migration.
@@ -51,7 +51,7 @@ function custom_migration_node_reference(Row $row, MigrateSourceInterface $sourc
     }
   }
 
-  if ($migration->id() == 'd7_field_formatter_settings') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field_formatter_settings') {
 
     // Map the changes in formatter names. This does not update formatter settings.
     // They have to be updated manually after migration.
@@ -73,7 +73,8 @@ function custom_migration_node_reference(Row $row, MigrateSourceInterface $sourc
 
   // Update all the entity migrations that have nodereference fields, on this site it's only nodes.
   // This will pick up both the main and the revision migrations.
-  if (substr($migration->id(), 0, 9) == 'd7_node__') {
+  $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
+  if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {
 
     // List all the nodereference field names.
     $nodereference_fields = array(

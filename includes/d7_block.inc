@@ -36,7 +36,7 @@ function custom_migration_block(Row $row, MigrateSourceInterface $source, Migrat
     'adsense_managed',
   );
 
-  if ($migration->id() == 'd7_block') {
+  if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_block') {
 
     // Don't automatically migrate all blocks.
     if (!in_array($row->getSourceProperty('module'), $skip_modules)) {
