@@ -65,10 +65,3 @@ I used one core patch as well, and it is required for the code to import referen
 
 A patch to migrate D7 entityreference fields, which includes some code needed to migrate node reference field settings:
 - https://www.drupal.org/files/issues/2611066-9.patch
-
-I also needed a patch to pull the book navigation/hierarchy in, without it you get book pages but no book structure. I actually just added code to this module to replicate
-what this patch does, so if you use this module you won't need this patch:
-- https://www.drupal.org/files/issues/upgrade_path_for_book_7_x-2409435-11.patch
-
-
-
