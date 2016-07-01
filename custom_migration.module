@@ -7,7 +7,7 @@
 
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
-use Drupal\migrate\Entity\MigrationInterface;
+use Drupal\migrate\Plugin\MigrationInterface;
 
 define('CUSTOM_MIGRATION_PREFIX', 'upgrade_');
 
@@ -44,7 +44,8 @@ function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $
 
   // Skip fields that don't work or will not be needed.
   $skip = array(
-    'field_view',
+    'field_tease_next',
+    'field_transition',
   );
   if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
     if (in_array($row->getSourceProperty('field_name'), $skip)) {

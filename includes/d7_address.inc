@@ -5,7 +5,7 @@
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
-use Drupal\migrate\Entity\MigrationInterface;
+use Drupal\migrate\Plugin\MigrationInterface;
 
 function custom_migration_address(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 

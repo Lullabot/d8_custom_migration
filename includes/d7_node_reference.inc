@@ -4,6 +4,9 @@
  * @file
  *   Code to convert D7 Node Reference fields to Entity Reference fields in D8.
  */
+use Drupal\migrate\Row;
+use Drupal\migrate\Plugin\MigrateSourceInterface;
+use Drupal\migrate\Plugin\MigrationInterface;
 
 function custom_migration_node_reference(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
