@@ -69,7 +69,20 @@ function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $
     if ($row->getSourceProperty('view_mode') == 'token') {
       return FALSE;
     }
+
+    // Map the changes in formatter names. This does not update formatter settings.
+    // Map some invalid formatters to things that are valid in D8.
+    $formatter_map = array(
+      'textformatter_list' => 'entity_reference_label',
+    );
+
+    $process = $migration->getProcess();
+    $process['options/type'][0]['map'] += $formatter_map;
+    $migration->setProcess($process);
+
     // Uncomment to debug
-    //drush_print_r($row);
+    drush_print_r($row);
+    $process = $migration->getProcess();
+    drush_print_r($process);
   }
 }
