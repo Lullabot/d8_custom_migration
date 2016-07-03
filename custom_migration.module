@@ -16,6 +16,12 @@ define('CUSTOM_MIGRATION_PREFIX', 'upgrade_');
  */
 function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
+  // Skip fields that don't work or will not be needed.
+  $skip = array(
+    'field_tease_next',
+    'field_transition',
+  );
+
   // Most of the code is broken out into separate files to make it easier to see
   // what is needed for each individual change.
 
@@ -42,11 +48,7 @@ function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $
   \Drupal::moduleHandler()->loadInclude('custom_migration', 'inc', '/includes/d7_geolocation');
   custom_migration_geolocation($row, $source, $migration);
 
-  // Skip fields that don't work or will not be needed.
-  $skip = array(
-    'field_tease_next',
-    'field_transition',
-  );
+  // Skip migration for fields in the $skip list.
   if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
     if (in_array($row->getSourceProperty('field_name'), $skip)) {
       return FALSE;
@@ -63,7 +65,7 @@ function custom_migration_migrate_prepare_row(Row $row, MigrateSourceInterface $
     // Skip broken formatters.
     // This is a place to skip or change formatters that are creating problems.
 
-    // Don't think token formatters work any more.
+    // Not sure token formatters work any more, so skip them.
     if ($row->getSourceProperty('view_mode') == 'token') {
       return FALSE;
     }

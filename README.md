@@ -2,7 +2,7 @@
 
 **Note: This module is not something you can blinding install and use, it requires some adjustment
 to the specific fields and content types on a particular site. So it should be used as a starting
-point for your own custom code!**
+point for your own custom code! This code has been used successfully to migrate real-world sites, but your mileage may vary!**
 
 This module contains custom migration code for miscellaneous D8 fields and content. It will force a number
 of custom fields that don't currently have migration handling to migrate, including node reference, user reference
