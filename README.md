@@ -1,4 +1,4 @@
-# D7 to D8 Custom Migration
+# D7 to D8 Custom Migration Debugger
 
 **Note: This module is not something you can blindly install and use, it requires some adjustment
 to the specific fields and content types on a particular site. So it should be used as a starting
@@ -20,7 +20,7 @@ These can also be used as examples for other fields you might need to migrate.
 
 The hook makes it easy to try changes out to see what does and doesn't provide the right results.
 You could create custom YAML files for the migration, and update them using the changes identified in this hook, then remove them from the hook implementation.
-It is also possible to change the code in the module to match your needs, then enable this module while the migration is running to avoid the need for creating custom YAML files.
+It is also possible to just adjust the code in this module to meet your needs, then enable this module while the migration is running to avoid the need to alter YAML files.
 Making changes to the processing on every individual row is not as effecient as adjusting the process configuration directly by tweaking
 the YAML files, but doing this on-the-fly does work.
 
