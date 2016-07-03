@@ -65,13 +65,15 @@ Watch the results. If particular migrations are throwing errors you can debug th
   if ($migration->id() == 'update_d7_field_formatter_settings') {
 
     drush_print_r($row);
-    drush_print_r($migration);
+    $process = $migration->getProcess();
+    drush_print_r($process);
   }
 
 ```
 
 Then re-run just that migration with ```drush mi update_d7_field_formatter_settings``` and watch the output. This code will make it possible to see which migration row was being processed when the migration aborted. That can be used to deduce
-what needs to be adjusted in the migration, or that this is a row that should just be skipped.
+what needs to be adjusted in the migration, or that this is a row that should just be skipped. You can also see what the current process looks like. It may be that it's the process that needs to be adjusted, like adding a new value to the map
+of before and after values for fields, widgets, and formatters.
 
 A common problem in upgrades are custom view modes that existed in the D7 site which don't exist in the D8 site.
 The config/optional directory contains an example of a custom view mode that needs to be added to the D8 site.
