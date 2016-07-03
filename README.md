@@ -1,13 +1,13 @@
 # D7 to D8 Custom Migration
 
-**Note: This module is not something you can blinding install and use, it requires some adjustment
+**Note: This module is not something you can blindingly install and use, it requires some adjustment
 to the specific fields and content types on a particular site. So it should be used as a starting
 point for your own custom code! This code has been used successfully to migrate real-world sites, but your mileage may vary!**
 
 This module contains custom migration code for miscellaneous D8 fields and content. It will migrate a number
 of custom fields that wouldn't otherwise work, including node reference, user reference
 address, geofield, and geolocation. It also adds handling for converting numeric formats to text
-formats, limiting the blocks that are migrated in, and otherwise provide a way to step in and adjust a migration.
+formats, limiting the blocks that are migrated in, and otherwise provide ways to step in and adjust a migration.
 
 Everything is done using ```hook_migrate_prepare_row()```, a powerful hook which includes the ability to both alter the
 source data and alter the migration process steps. Each of the include files needs to be adjusted
