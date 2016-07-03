@@ -4,9 +4,13 @@
  * @file
  *   Code to convert D7 Node Reference fields to Entity Reference fields in D8.
  *
+ * Problem being solved: There is no migration path for D7 References fields to D8 Entityreference fields.
+ * This is an alternative to https://www.drupal.org/project/entityreference_migration, which requires that you convert the D7
+ * database, and them migrate, which may introduce problems and may not be possible in all cases.
+ *
  * NOTE THAT THIS CODE DEPENDS ON A PATCH, AND WILL NOT WORK WITHOUT IT:
  *   Patch to migrate D7 entityreference fields, which includes some code needed to migrate node reference field settings:
- *   - https://www.drupal.org/files/issues/2611066-9.patch
+ *   - https://www.drupal.org/files/issues/field-upgrade_path_to_entity_reference_field_from_7.x-2611066-22-D8.1.x.patch
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;

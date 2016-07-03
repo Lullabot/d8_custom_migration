@@ -71,4 +71,4 @@ can reload when this happens.
 
 I used one core patch as well, and it is required for the code to import references. It is a patch to migrate D7 entityreference fields, which includes some code needed to migrate node reference field settings:
 
-- [https://www.drupal.org/files/issues/2611066-9.patch](https://www.drupal.org/files/issues/2611066-9.patch)
+- [https://www.drupal.org/files/issues/field-upgrade_path_to_entity_reference_field_from_7.x-2611066-22-D8.1.x.patch](https://www.drupal.org/files/issues/field-upgrade_path_to_entity_reference_field_from_7.x-2611066-22-D8.1.x.patch)

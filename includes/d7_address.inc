@@ -2,12 +2,19 @@
 /**
  * @file
  *   Code to convert D7 addressfield fields to D8 address fields.
+ *
+ * Problem being solved: There is no migration path for D7 addressfields to map them to D8 address.
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 function custom_migration_address(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+
+  // List all the address field names.
+  $address_fields = array(
+    'field_address',
+  );
 
   // Convert addressfield fields into address fields.
   if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
@@ -51,10 +58,6 @@ function custom_migration_address(Row $row, MigrateSourceInterface $source, Migr
   $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
   if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {
 
-    // List all the address field names.
-    $address_fields = array(
-      'field_address',
-    );
     foreach ($address_fields as $field) {
       if ($value = $row->getSourceProperty($field)) {
         if (!empty($value)) {

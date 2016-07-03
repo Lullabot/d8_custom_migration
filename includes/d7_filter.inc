@@ -3,6 +3,11 @@
 /**
  * @file
  *   Code to convert legacy numeric format names to D8 names.
+ *
+ * Problem being solved: D7 site that was formerly a D7 site has text formats with
+ * numeric names, like '1' instead of 'basic_html'. We want to convert all the D7
+ * text format references to use the machine names provided by default in D8 instead
+ * of these old numeric formats.
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
@@ -10,8 +15,14 @@ use Drupal\migrate\Plugin\MigrationInterface;
 
 function custom_migration_filter(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
-  // Map the old numeric format names to new D8 formats.
-  // The out-of-the-box migration would retain the D7 format names.
+  // List fields that use long text fields with text formats.
+  $text_fields = array(
+    'body',
+    'field_description',
+    'field_gallery_image_original',
+  );
+
+  // Map the old numeric format names to new D8 formats. The out-of-the-box migration would retain the D7 format names.
   // This assumes all necessary formats have already been created in D8 by the D8 installation process.
   $format_map = array(
     'js' => '',
@@ -43,12 +54,6 @@ function custom_migration_filter(Row $row, MigrateSourceInterface $source, Migra
     $migration->setProcess($process);
   }
 
-  // Update body and formatted text fields to use the new D8 formats.
-  $text_fields = array(
-    'body',
-    'field_description',
-    'field_gallery_image_original',
-  );
   // Update nodes to use the new D8 formats.
   $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
   if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {

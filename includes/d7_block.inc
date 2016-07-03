@@ -3,6 +3,9 @@
 /**
  * @file
  *   Code to limit the migrated blocks to only the ones used by the active theme in the source.
+ *
+ * Problem being solved: A legacy site that has been through many upgrades and used a lot of themes has
+ * hundreds of blocks that are all getting created in the new D8 site. It's time to stop the madness!
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;

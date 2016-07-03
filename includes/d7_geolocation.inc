@@ -2,12 +2,19 @@
 /**
  * @file
  *   Code to convert D7 geolocation to D8 geolocation.
+ *
+ * Problem being solved: There is no migration path for D7 to D8 geolocation fields.
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 function custom_migration_geolocation(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+
+  // List all the geofield field names.
+  $geofields = array(
+    'field_geolocation',
+  );
 
   // Map D7 geolocation_latlng to D8 geolocation.
   if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
@@ -59,10 +66,6 @@ function custom_migration_geolocation(Row $row, MigrateSourceInterface $source, 
   // This will pick up both the main and the revision migrations.
   $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
   if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {
-    // List all the geofield field names.
-    $geofields = array(
-      'field_geolocation',
-    );
     foreach ($geofields as $field) {
       if ($value = $row->getSourceProperty($field)) {
         if (!empty($value)) {

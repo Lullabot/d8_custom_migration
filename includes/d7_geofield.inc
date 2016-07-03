@@ -2,12 +2,19 @@
 /**
  * @file
  *   Code to convert D7 geofield to D8 geofields.
+ *
+ * Problem being solved: There is no migration for D7 to D8 geofields.
  */
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
 
 function custom_migration_geofield(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+
+  // List all the geofield field names.
+  $geofields = array(
+    'field_geofield',
+  );
 
   // The field type doesn't change, so this could be skipped.
   if ($migration->id() == CUSTOM_MIGRATION_PREFIX . 'd7_field') {
@@ -68,10 +75,6 @@ function custom_migration_geofield(Row $row, MigrateSourceInterface $source, Mig
   // This will pick up both the main and the revision migrations.
   $len = strlen('d7_node__') + strlen(CUSTOM_MIGRATION_PREFIX);
   if (substr($migration->id(), 0, $len) == CUSTOM_MIGRATION_PREFIX . 'd7_node__') {
-    // List all the geofield field names.
-    $geofields = array(
-      'field_geofield',
-    );
     foreach ($geofields as $field) {
       if ($value = $row->getSourceProperty($field)) {
         if (!empty($value)) {
