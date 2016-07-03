@@ -9,6 +9,10 @@ of custom fields that wouldn't otherwise work, including node reference, user re
 address, geofield, and geolocation. It also adds handling for converting numeric formats to text
 formats, limiting the blocks that are migrated in, and otherwise providing ways to step in and adjust a migration.
 
+This is designed to be re-run over and over while debugging and adjusting a Drupal to Drupal migration. For best results,
+create a bash script to make it easy to drop the database and start the whole process from scratch as many times as necessary.
+I run it over and over, debugging an error at a time and trying to figure out how to pull in more missing data.
+
 Everything is done using ```hook_migrate_prepare_row()```, a powerful hook which includes the ability to both alter the
 source data and alter the migration process steps. Each of the include files needs to be adjusted
 for the specific site, identifying the particular field types and field names that should be touched.
@@ -16,7 +20,7 @@ These can also be used as examples for other fields you might need to migrate.
 
 The hook makes it easy to try changes out to see what does and doesn't provide the right results.
 You could create custom YAML files for the migration, and update them using the changes identified in this hook, then remove them from the hook implementation.
-It is also possible to use this code to avoid the need for creating custom YAML files.
+It is also possible to change the code in the module to match your needs, then enable this module while the migration is running to avoid the need for creating custom YAML files.
 Making changes to the processing on every individual row is not as effecient as adjusting the process configuration directly by tweaking
 the YAML files, but doing this on-the-fly does work.
 
@@ -66,7 +70,7 @@ Watch the results. If particular migrations are throwing errors you can debug th
 
 ```
 
-This code will make it possible to see which migration row was being processed when the migration aborted. That can be used to deduce
+Then re-run just that migration with ```drush mi update_d7_field_formatter_settings``` and watch the output. This code will make it possible to see which migration row was being processed when the migration aborted. That can be used to deduce
 what needs to be adjusted in the migration, or that this is a row that should just be skipped.
 
 A common problem in upgrades are custom view modes that existed in the D7 site which don't exist in the D8 site.
