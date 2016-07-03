@@ -14,6 +14,12 @@ source data and alter the migration process steps. Each of the include files nee
 for the specific site, identifying the particular field types and field names that should be touched.
 These can also be used as examples for other fields you might need to migrate.
 
+The hook makes it easy to try changes out to see what does and doesn't provide the right results.
+You could create custom YAML files for the migration, and update them using the changes identified in this hook, then remove them from the hook implementation.
+It is also possible to use this code to avoid the need for creating custom YAML files.
+Making changes to the processing on every individual row is not as effecient as adjusting the process configuration directly by tweaking
+the YAML files, but doing this on-the-fly does work.
+
 The ```hook_migrate_prepare_row()``` is provided by the [Migrate Plus module](https://www.drupal.org/project/migrate_plus), so that is required for this to work.
 You also need to be able to run drush migrate-upgrade. That will eventually be available in Drush 8
 core, and may already be there, depending on what version of Drush you are running. If it's not, you
