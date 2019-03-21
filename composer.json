@@ -1,0 +1,17 @@
+{
+  "name": "drupal/lullabot_migrate",
+  "description": "A module for migration, including Drush 9 commands.",
+  "type": "drupal-module",
+  "autoload": {
+    "psr-4": {
+      "Drupal\\lullabot_migrate\\": "src/"
+    }
+  },
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
+  }
+}

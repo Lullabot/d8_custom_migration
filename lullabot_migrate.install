@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * Implementation of hook_uninstall().
+ *
+ * Clean up migration tables that won't be removed when migrate module
+ * is uninstalled.
+ */
+function lullabot_migrate_uninstall() {
+  lullabot_migrate_clean_migration();
+}
+
+/**
+ * Implementation of hook_install().
+ *
+ * Create high auto increment values so new content created in D8 or content
+ * created by migrations that didn't exist in D7 all have high enough ids
+ * and vids that they will never conflict with migrated content.
+ * Set by finding the highest values that current exist in D7 and adding
+ * something to the highest values. Makes the assumption that no more than
+ * i.e. 25,000 new nodes/revisions will be created during the course of the
+ * continuous migration. All new content will be created with these high ids.
+ * All older content will migrate in with the original ids.
+ *
+ * @see https://github.com/dcycle/d6_to_d8_migration_example/tree/7
+ */
+function lullabot_migrate_install() {
+  if (!entity_load('user', 8000)) {
+    db_query("ALTER TABLE node AUTO_INCREMENT = 8000");
+    db_query("ALTER TABLE node_revision AUTO_INCREMENT = 8000");
+    db_query("ALTER TABLE taxonomy_term_data AUTO_INCREMENT = 8000");
+    db_query("ALTER TABLE file_managed AUTO_INCREMENT = 8000");
+    $values = [
+      'name' => 'dummy-user-bump-to-8000',
+      'mail' => 'test@test.com',
+      'roles' => array(),
+      'pass' => rand() . rand() . rand() . rand() . rand() . rand(),
+      'status' => 0,
+      'uid' => 8000,
+    ];
+    $account = entity_create('user', $values);
+    $account->save();
+  }
+}

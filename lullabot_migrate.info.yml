@@ -1,0 +1,10 @@
+name: Lullabot Migrate
+type: module
+description: Miscellaneous migration code for the D7 to D8 migration.
+core: 8.x
+package: Migration
+dependencies:
+  - node
+  - user
+  - taxonomy
+  - migrate

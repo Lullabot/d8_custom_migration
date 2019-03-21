@@ -1,0 +1,5 @@
+name: Lullabot Migrate Media
+type: module
+description: Custom migration code to transform file/image entities to media entities during migration.
+core: 8.x
+package: Migration

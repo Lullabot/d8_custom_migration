@@ -1,0 +1,356 @@
+<?php
+
+/**
+ * @file
+ * Contains lullabot_migrate.module.
+ */
+
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate\Plugin\MigrateSourceInterface;
+use Drupal\migrate\Row;
+use Drupal\migrate\MigrateSkipRowException;
+
+$GLOBALS['skip_bundles'] = [
+  'list',
+  'promo',
+  'quote',
+  'template',
+];
+$GLOBALS['case_studies'] = [
+  1543,
+  27,
+  25,
+  28,
+  26,
+  1428,
+  1440,
+  29,
+  1326,
+];
+$GLOBALS['simple_pages'] = [
+  1330, // Terms of service
+  50, // Newsletter confirmation
+  1309, // Contact confirmation
+  51, // Mission
+  52, // Benefits
+  1341, // Privacy policy
+];
+/**
+ * Implmentation of hook_migrate_MIGRATION_ID_prepare_row().
+ *
+ * @param \Drupal\migrate\Row $row
+ *   The row being imported.
+ * @param \Drupal\migrate\Plugin\MigrateSourceInterface $source
+ *   The source migration.
+ * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+ *   The current migration.
+ *
+ * @ingroup migration
+ */
+function lullabot_migrate_migrate_d7_file_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  // Skip webform files, if any.
+  if (strpos($row->getSourceProperty('filepath'), 'webform/') !== FALSE) {
+    return FALSE;
+  }
+}
+
+// d7_multifield_episode_guests is for non-bot episode guest multifields, to
+// make into other_bio nodes. Skip unpublished episodes.
+function lullabot_migrate_migrate_d7_multifield_episode_guests_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  if (!empty($row->getSourceProperty('field_episode_guests_bot_target_id'))) {
+    return FALSE;
+  }
+  if (empty($row->getSourceProperty('parent_status'))) {
+    return FALSE;
+  }
+}
+
+// External links multifields become external articles.
+// Only create external articles of active employees.
+function lullabot_migrate_migrate_d7_multifield_bio_external_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  // Only for active employees.
+  $value = $row->getSourceProperty('field_bio_active');
+  if (empty($value) || empty($value[0]['value'])) {
+    return FALSE;
+  }
+}
+
+// Skip case study section nodes, identified by the number of any of the case
+// study templates. We'll migrate them into the case study content type instead.
+function lullabot_migrate_migrate_d7_node_section_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  $value = $row->getSourceProperty('field_template');
+  if (in_array($value[0]['target_id'], $GLOBALS['case_studies'])) {
+    return FALSE;
+  }
+  if (in_array($row->getSourceProperty('nid'), $GLOBALS['simple_pages'])) {
+    return FALSE;
+  }
+}
+// Case study section nodes only, identified by the case study templates.
+// Migrate section nodes into the case study content type instead.
+// Follow up to the above migration.
+function lullabot_migrate_migrate_d7_node_case_study_section_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  $value = $row->getSourceProperty('field_template');
+  if (!in_array($value[0]['target_id'], $GLOBALS['case_studies'])) {
+    return FALSE;
+  }
+}
+// Simple page nodes only.
+// Migrate section nodes into the page content type instead.
+// Follow up to the above migration.
+function lullabot_migrate_migrate_d7_node_page_section_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  $nid = $row->getSourceProperty('nid');
+  if (!in_array($nid, $GLOBALS['simple_pages'])) {
+    return FALSE;
+  }
+  // Make sure that any previous-created section node is deleted before we
+  // try to create a page node.
+  if ($node = node_load($nid)) {
+    if ($node->getType() == 'section') {
+      $node->delete();
+    }
+  }
+}
+
+/**
+ * Implmentation of hook_migrate_prepare_row().
+ *
+ * @param \Drupal\migrate\Row $row
+ *   The row being imported.
+ * @param \Drupal\migrate\Plugin\MigrateSourceInterface $source
+ *   The source migration.
+ * @param \Drupal\migrate\Plugin\MigrationInterface $migration
+ *   The current migration.
+ *
+ * @ingroup migration
+ */
+function lullabot_migrate_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+}
+/**
+ * Implementation of hook_migration_plugins_alter().
+ *
+ * The code here will transform the migration YAML files. It's a handy way to
+ * alter the YAML on the fly, remove some files entirerly, or apply changes that
+ * will adjust many files consistently. This code will only work when the
+ * migration configuration is first created. To make changes using this hook,
+ * completely remove all migration entities from active storage (i.e. do
+ * `drush cim` on the pre-migration configuration), then re-generate the
+ * configuration with `drush migrate:import --configuration-only`.
+ */
+function lullabot_migrate_migration_plugins_alter(&$migrations) {
+
+  // No longer needed now that migration yaml files are stored in config/sync.
+  return;
+  foreach ($migrations as $key => &$migration) {
+
+    // There are multiple possible formats for the $key, d7_node:section or
+    // migration_config_deriver:d7_node_section. We need to normalize the keys
+    // to make the following logic easier to follow. Transform all keys into
+    // the 'd7_node:section' format.
+    $alt_key = str_replace('migration_config_deriver:', '', $key);
+    if (strpos($key, 'd7_node_revision')) {
+      $alt_key = str_replace('d7_node_revision', 'd7_node_revision:', $alt_key);
+    }
+    elseif (strpos($key, 'd7_node_')) {
+      $alt_key = str_replace('d7_node_', 'd7_node:', $alt_key);
+    }
+    // A few non-content migrations have a pattern that looks like a content
+    // migration, fix them.
+    if (in_array($alt_key, ['d7_node:type', 'd7_node:settings', 'd7_node:title_label'])) {
+      $alt_key = str_replace('d7_node:', 'd7_node_', $alt_key);
+    }
+
+    // Don't waste cycles on Drupal 6 migration items. They'll be unset later
+    // anyway.
+    if (array_key_exists('migration_tags', $migration) && in_array('Drupal 6', $migration['migration_tags'])) {
+      unset($migrations[$key]);
+    }
+
+    // Skip some migrations completely.
+    // You have to make sure none of these are dependencies of migrations
+    // that are not being unset!
+    $unset = [
+      // D7 blocks make no sense in D8.
+      'block_content_body_field',
+      'block_content_entity_display',
+      'block_content_entity_form_display',
+      'block_content_type',
+
+      // Theme settings will be different.
+      'd7_global_theme_settings',
+
+      // The D7 menus and urls were not configured to be useful.
+      'd7_menu_links',
+      'd7_menu',
+      'd7_url_alias',
+
+      // Filter formats are already configured correctly in D8.
+      'd7_filter_settings',
+      'd7_filter_format',
+
+      // Once configuration is created, quit running configuration migrations.
+      'd7_dblog_settings',
+      'd7_field_formatter_settings',
+      'd7_field_group',
+      'd7_field_instance_widget_settings',
+      'd7_field_instance',
+      'd7_field',
+      'd7_file_private',
+      'd7_image_settings',
+      'd7_image_styles',
+      'd7_search_settings',
+      'd7_system_authorize',
+      'd7_system_cron',
+      'd7_system_date',
+      'd7_system_file',
+      'd7_system_mail',
+      'd7_system_performance',
+      'd7_theme_settings',
+      'd7_user_flood',
+      'd7_user_mail',
+      'd7_user_role',
+      'd7_view_modes',
+
+      // We don't need these types in D8.
+      'd7_node:template',
+      'd7_node_revision:template',
+      'd7_node:list',
+      'd7_node_revision:list',
+      'd7_node:promo',
+      'd7_node_revision:promo',
+      'd7_node:quote',
+      'd7_node_revision:quote',
+      'd7_multifield_items',
+
+      // We don't need to migrate revisions for these types.
+      'd7_node_revision:section',
+      'd7_node_revision:topic',
+    ];
+    if (in_array($alt_key, $unset)) {
+      if (isset($migrations[$key])) {
+        unset($migrations[$key]);
+      }
+    }
+
+    // We don't need any translations. The core system will create translation
+    // configuration for every entity that has translated data. But we're
+    // altering some of the formatted content and automatic translation will
+    // fail. Since we don't have translations anyway, just remove them.
+    if (strpos($key, 'translation') !== FALSE) {
+      unset($migrations[$key]);
+    }
+
+    // Add uuids to nodes, users, and files.
+    if (!empty($migration[$key]['nid'])) {
+      $migrations[$key]['uuid'] = 'uuid';
+    }
+    if (!empty($migration[$key]['uid'])) {
+      $migrations[$key]['uuid'] = 'uuid';
+    }
+    if (!empty($migration[$key]['fid'])) {
+      $migrations[$key]['uuid'] = 'uuid';
+    }
+
+    // Fields we no longer need, like fields on or references to removed types.
+    $skip_fields = [
+      'field_template',
+      'field_template_file_name',
+      'field_template_global_groups',
+      'field_template_item_groups',
+    ];
+    foreach ($skip_fields as $field_name) {
+      if (array_key_exists('process', $migration) && array_key_exists($field_name, $migration['process'])) {
+        unset($migration['process'][$field_name]);
+      }
+    }
+
+    // Configure all the formatted text fields to map D7 formats to D8 formats.
+    $formatted_fields = [
+      'field_bio_fact',
+      'field_bio_quote_text',
+      'field_itunes_summary',
+      'field_lead',
+      'field_quotation',
+      'field_transcript',
+    ];
+    foreach ($formatted_fields as $field_name) {
+      if (array_key_exists('process', $migration) && array_key_exists($field_name, $migration['process'])) {
+        if (isset($migration['process'][$field_name])) {
+          $migrations[$key]['process'][$field_name . '/0/format'] = [
+            'plugin' => 'static_map',
+            'map' => [
+              'filtered_html' => 'basic_html',
+              'markdown' => 'markdown',
+              'plain_text' => 'plain_text',
+            ],
+            'default_value' => 'basic_html',
+            'source' => $field_name . '/0/format',
+          ];
+        }
+      }
+    }
+
+    // Run the body content through a custom process plugin to replace
+    // embedded images, etc.
+    if (array_key_exists('process', $migration) && array_key_exists('body', $migration['process'])) {
+      unset($migrations[$key]['process']['body']);
+      $migrations[$key]['process']['body'] = [
+        'plugin' => 'lullabot_embedded_content',
+        'source' => 'body',
+      ];
+    }
+
+    // Run the deck through a custom process plugin to populate it if empty.
+    if (array_key_exists('process', $migration) && array_key_exists('field_deck', $migration['process'])) {
+      unset($migrations[$key]['process']['field_deck']);
+      $migrations[$key]['process']['field_deck'] = [
+        'plugin' => 'lullabot_deck',
+        'source' => 'field_deck',
+      ];
+    }
+
+    // Inject a custom process plugin for field_episode_guests.
+    if (array_key_exists('process', $migration) && array_key_exists('field_episode_guests', $migration['process'])) {
+      $migrations[$key]['process']['field_episode_guests'] = [
+        'plugin' => 'lookup_episode_guests',
+        'source' => 'field_episode_guests',
+      ];
+    }
+
+    // Don't allow any field data on some nodes to be overwritten after
+    // migration. The overwrite_properties array should contain a list of
+    // fields/properties that can be overwritten if they change in the source.
+    // An empty array means don't allow any fields to be overwritten.
+    // With this setting new section nodes can be created, but once created
+    // they won't be changed.
+    if ($alt_key == 'd7_node:section') {
+      $migrations[$key]['destination']['overwrite_properties'] = [];
+    }
+  }
+}
+
+/**
+ * Remove migration tables after migration is complete.
+ *
+ * Needed because tables are not automatically removed when uninstalling the
+ * Migrate module. Implemented in hook_uninstall().
+ */
+function lullabot_migrate_clean_migration() {
+  $success = [];
+  $database_tables = db_query("SHOW TABLES LIKE 'migrate\_%'")->fetchAll();
+  foreach ($database_tables as $table) {
+    $table_name = array_values((array) $table)[0];
+    try {
+      db_query("DROP TABLE " . $table_name)->execute();
+      $success[] = $table_name;
+    }
+    catch (Exception $e) {
+      $failed[] = $table_name;
+    }
+  }
+  // Log dropped migration tables.
+  \Drupal::logger('lullabot_migrate')->notice('The following migration tables were removed during uninstall: @tables', [
+    '@tables' => implode(', ', $success),
+  ]);
+
+}

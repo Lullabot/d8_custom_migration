@@ -1,0 +1,126 @@
+<?php
+
+/**
+ * @file
+ * Contains lullabot_migrate_paths.module.
+ */
+
+/**
+ * Implementation of hook_migration_plugins_alter().
+ *
+ * The code here will transform the migration YAML files. It's a handy way to
+ * alter the YAML on the fly, remove some files entirerly, or apply changes that
+ * will adjust many files consistently. To make changes using this hook,
+ * completely remove all migration entities from active storage (i.e. do
+ * `drush cim` on the pre-migration configuration), then re-generate the
+ * configuration with `drush migrate:import --configuration-only`.
+ */
+function lullabot_migrate_paths_migration_plugins_alter(&$migrations) {
+
+  foreach ($migrations as $key => &$migration) {
+
+    // There are multiple possible formats for the $key, d7_node:section or
+    // migration_config_deriver:d7_node_section. We need to normalize the keys
+    // to make the following logic easier to follow. Transform all keys into
+    // the 'd7_node:section' format.
+    $alt_key = str_replace('migration_config_deriver:', '', $key);
+    if (strpos($key, 'd7_node_revision')) {
+      $alt_key = str_replace('d7_node_revision', 'd7_node_revision:', $alt_key);
+    }
+    elseif (strpos($key, 'd7_node_')) {
+      $alt_key = str_replace('d7_node_', 'd7_node:', $alt_key);
+    }
+    // A few non-content migrations have a pattern that looks like a content
+    // migration, fix them.
+    if (in_array($alt_key, ['d7_node:type', 'd7_node:settings', 'd7_node:title_label'])) {
+      $alt_key = str_replace('d7_node:', 'd7_node_', $alt_key);
+    }
+
+    // Construct a path alias for each content type that contains a process
+    // for the parent field. Ignore revisions, we don't need aliases for them.
+    if (array_key_exists('process', $migration)
+      && array_key_exists('field_parent', $migration['process'])
+      && array_key_exists('field_slug', $migration['process'])
+      && strpos($alt_key, 'd7_node_revision') === FALSE) {
+
+      // Turn off automatic pathauto processing.
+      $migrations[$key]['process']['path/pathauto'] = [
+        'plugin' => 'default_value',
+        'default_value' => 0,
+      ];
+
+      // No translation of paths is necessary since we don't have a multi-
+      // lingual site.
+      $migrations[$key]['process']['path/langcode'] = [
+        'plugin' => 'default_value',
+        'default_value' => 'und',
+      ];
+
+      // Create a temporary value with the id of the parent.
+      // Slightly different variations for each migration to avoid causing
+      // migrate to add optional dependencies on migrations that should run
+      // later.
+
+      // Section nodes are always parents, and might have other section
+      // nodes as parents.
+      if ($alt_key == 'd7_node:section') {
+        $migrations[$key]['process']['parentid'] = [
+          'plugin' => 'get',
+          'source' => 'field_parent/0/target_id',
+        ];
+      }
+      // Shows, series, or white papers might be parents of other content types
+      // and have section nodes as their own parents.
+      elseif (in_array($alt_key, ['d7_node:show', 'd7_node:series', 'd7_node:white_paper'])) {
+        $migrations[$key]['process']['parentid'] = [
+          'plugin' => 'migration_lookup',
+          'migration' => [
+            'd7_node_section',
+          ],
+          'source' => 'field_parent/0/target_id',
+        ];
+      }
+      // All other content types are never parents and always have to look up
+      // a parent value from previous migrations.
+      else {
+        $migrations[$key]['process']['parentid'] = [
+          'plugin' => 'migration_lookup',
+          'migration' => [
+            'd7_node_section',
+            'd7_node_show',
+            'd7_node_series',
+            'd7_white_paper',
+          ],
+          'source' => 'field_parent/0/target_id',
+        ];
+      }
+
+      // Reconstruct the correct path using the slug and parent id.
+      $migrations[$key]['process']['path/alias'] = [
+        'plugin' => 'lullabot_path',
+        'source' => [
+          'field_slug/0/value',
+          '@parentid',
+        ],
+      ];
+
+      // Add dependencies to the migration to be sure parent values are created
+      // first so we can retrieve their slugs in the callback.
+      // This actually doesn't work since there is some bug in the migration
+      // that later removes any dependencies added here. This is mostly a
+      // reminder to add these dependencies manually or remember to run the
+      // migrations in the right order.
+      if ($alt_key == 'd7_node:section') {
+        // No additional dependencies.
+      }
+      elseif (in_array($alt_key, ['d7_node:show', 'd7_node:series', 'd7_node:white_paper'])) {
+        $migrations[$key]['migration_dependencies']['required'][10] = 'd7_node_section';
+      }
+      else {
+        $migrations[$key]['migration_dependencies']['required'][10] = 'd7_node_show';
+        $migrations[$key]['migration_dependencies']['required'][11] = 'd7_node_series';
+        $migrations[$key]['migration_dependencies']['required'][12] = 'd7_node_white_paper';
+      }
+    }
+  }
+}

@@ -1,95 +1,47 @@
-# D7 to D8 Custom Migration Debugger
+#Lullabot custom migrations
 
-**Note: This module is not something you can blindly install and use, it requires some adjustment
-to the specific fields and content types on a particular site. So it should be used as a starting
-point for your own custom code! This code has been used successfully to migrate real-world sites, but your mileage may vary!**
-
-This module contains custom migration code for miscellaneous D8 fields and content. It will migrate a number
-of custom fields that wouldn't otherwise work, including node reference, user reference,
-address, geofield, and geolocation. It also adds handling for converting numeric formats to text
-formats, limiting the blocks that are migrated in, and otherwise providing ways to step in and adjust a migration.
-
-This is designed to be re-run over and over while debugging and adjusting a Drupal to Drupal migration. For best results,
-create a bash script to make it easy to drop the database and start the whole process from scratch as many times as necessary.
-I run it over and over, debugging an error at a time and trying to figure out how to pull in more missing data.
-
-Everything is done using ```hook_migrate_prepare_row()```, a powerful hook which includes the ability to both alter the
-source data and alter the migration process steps. Each of the include files needs to be adjusted
-for the specific site, identifying the particular field types and field names that should be touched.
-These can also be used as examples for other fields you might need to migrate.
-
-The hook makes it easy to try changes out to see what does and doesn't provide the right results.
-You could create custom YAML files for the migration, and update them using the changes identified in this hook, then remove them from the hook implementation.
-It is also possible to just adjust the code in this module to meet your needs, then enable this module while the migration is running to avoid the need to alter YAML files.
-Making changes to the processing on every individual row is not as effecient as adjusting the process configuration directly by tweaking
-the YAML files, but doing this on-the-fly does work.
-
-The ```hook_migrate_prepare_row()``` is provided by the [Migrate Plus module](https://www.drupal.org/project/migrate_plus), so that is required for this to work.
-You also need to be able to run drush migrate-upgrade. That will eventually be available in Drush 8
-core, and may already be there, depending on what version of Drush you are running. If it's not, you
-can use the [Migrate Upgrade module](https://www.drupal.org/project/migrate_upgrade) to provide it.
-
-A common series of steps would be:
-
-- Create a new D8 database.
-- Enable all the necessary modules, including:
- - Migrate
- - Migrate Drupal
- - Migrate Tools
- - Migrate Plus
- - Devel
- - Kint
- - All field, content, widget, and formatter modules needed for the final site
-
-Then:
+## Media
+The migrate media module transforms embedded images in D7 nodes to switch them from json images:
 
 ```
-drush migrate-upgrade --legacy-db-url="mysql://root:password@localhost/dbname" --legacy-root="http://d7site.com" --configure-only
+[image:{
+"fid":"4655",
+"width":"medium",
+"border":true,
+"position":"","treatment":""
+}]
 ```
 
-To see all the migrations that will run:
+to media embed tags:
 
 ```
-drush ms
-```
-
-To do the import:
-
-```
-drush mi --all
-```
-
-Watch the results. If particular migrations are throwing errors you can debug them by adding code like this to the hook implementation:
+<drupal-entity 
+data-embed-button="media_entity_embed" 
+data-entity-embed-display="view_mode:media.narrow" 
+data-entity-type="media" 
+data-entity-id="4655">
+</drupal-entity>
 
 ```
-  if ($migration->id() == 'update_d7_field_formatter_settings') {
-    drush_print_r($row);
-    $process = $migration->getProcess();
-    drush_print_r($process);
-  }
+There is also code to transform embedded Vimeo and YouTube videos to media embeds.
+
+The transformation is done in a custom process plugin, LullabotEmbeddedContent, using several custom services:
 
 ```
-
-Then re-run just that migration with ```drush mi update_d7_field_formatter_settings``` and watch the output. This code will make it possible to see which migration row was being processed when the migration aborted. That can be used to deduce
-what needs to be adjusted in the migration, or that this is a row that should just be skipped. You can also see what the current process looks like. It may be that it's the process that needs to be adjusted, like adding a new value to the map
-of before and after values for fields, widgets, and formatters.
-
-Common problems are non-core fields, formatters, and widgets that are missing in the D8 site. Missing fields
-will just be ignored, but if migrated fields use non-core formatters or widgets the migration will explode with a
-"Missing dependencies" error, so it's important to make sure something has been done to either install them in D8 or
-add code to massage them into valid values. An example of this is in the include file to migrate node references,
-for instance.
-
-As you're debugging, the migration you're trying to fix may get stuck and never stop running. To fix that, do the following, using the name of the broken migration:
-
+src/LullabotInlineImages.php
+src/LullabotInlineVideos.php
+src/LullabotMedia.php
 ```
-drush php-eval 'var_dump(Drupal::keyValue("migrate_status")->set('update_d7_field_formatter_settings', 0))'
-```
+The PostMigrationSubscriber handles the deletion of media entities when the file migration is rolled back, since they otherwise don't get removed on rollback.
 
-It is possible to roll back and re-run the migration, but field configuration won't ever really roll back, only content. If you need to re-do a field
-migration you'll need to drop the database and start over. It's best to create a database dump right before you start working on the migration that you
-can reload when this happens.
+## D8 formats
+In `hook_migration_plugins_alter()`, the migrated node bodies are adjusted to map D7 format to D8 formats, changing all entities and entity revisions in a single place.
 
-I used one core patch as well, and it is required for the code to import node and user references. It is a patch to migrate D7 entityreference fields, which includes some code also needed to migrate node reference field settings:
+## Pathauto and menus
+Paths are constructed by the Migrate Paths module as each node is migrated in, by concatonating parent and child slugs.
 
-- [https://www.drupal.org/files/issues/field-upgrade_path_to_entity_reference_field_from_7.x-2611066-22-D8.1.x.patch](https://www.drupal.org/files/issues/field-upgrade_path_to_entity_reference_field_from_7.x-2611066-22-D8.1.x.patch)
+Menus are created in PostMigrationSubscriber, after the nodes that are contained in the menus have been created.
+
+
+## Configuration vs content migration
+The migration was executed in steps. First configuration was migrated in and adjusted. The new configuration has been stored in the config sync repository. The code in `hook_migrations_plugins_alter` ensures that future migrations omit the configuration migrations (by unsetting them) so the configuration changes don't get overwritten and only content migrations will be executed.

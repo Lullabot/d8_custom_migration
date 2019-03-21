@@ -1,0 +1,10 @@
+services:
+  lullabot_migrate_media.inline_images:
+    class: Drupal\lullabot_migrate_media\LullabotInlineImages
+    arguments: []
+  lullabot_migrate_media.inline_videos:
+    class: Drupal\lullabot_migrate_media\LullabotInlineVideos
+    arguments: []
+  lullabot_migrate_media.media:
+    class: Drupal\lullabot_migrate_media\LullabotMedia
+    arguments: ['@messenger',  '@logger.factory', '@entity_type.manager', '@database', '@lullabot_migrate.database7']

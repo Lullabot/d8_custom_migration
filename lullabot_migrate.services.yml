@@ -1,0 +1,12 @@
+services:
+  lullabot_migrate.post_migration_subscriber:
+    class: '\Drupal\lullabot_migrate\EventSubscriber\PostMigrationSubscriber'
+    tags:
+      - { name: 'event_subscriber' }
+  lullabot_migrate.database7:
+    class: Drupal\Core\Database\Connection
+    factory: 'Drupal\Core\Database\Database::getConnection'
+    arguments: ['default', 'default']
+  lullabot_migrate.service:
+    class: Drupal\lullabot_migrate\LullabotMigrationService
+    arguments: ['@messenger',  '@logger.factory', '@entity_type.manager', '@database', '@lullabot_migrate.database7']

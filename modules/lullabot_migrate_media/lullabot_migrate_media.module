@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * @file
+ * Contains lullabot_migrate_media.module.
+ */
+
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate\Plugin\MigrateSourceInterface;
+use Drupal\migrate\Row;
+use Drupal\migrate\MigrateSkipRowException;
+
+/**
+ * List of file/image fields and the media fields that are replacing them.
+ */
+function lullabot_migrate_media_fields() {
+  // List of file fields that need to become media entities,
+  // grouped by media bundle. The value on the left is the original file field
+  // name, the value on the right is the new media field name. The new media
+  // fields should have already been created prior to migration. The source
+  // file/image fields are the ones automatically migrated in. The logic will
+  // work whether the new fields have the same name as the old fields or not.
+  return [
+    'image' => [
+      'field_hero_image' => 'field_hero_media',
+      'field_promo_image' => 'field_promo_media',
+      'field_show_image' => 'field_show_media',
+      'field_bio_image' => 'field_bio_media',
+      'field_assets' => 'field_assets_media',
+      'field_episode_guests_image' => 'field_episode_guests_media',
+    ],
+    'file' => [
+      'field_pdf' => 'field_pdf_media',
+      'field_bio_map' => 'field_bio_map_media',
+    ],
+    'audio' => [
+      'field_episode_audio' => 'field_audio_media',
+    ]
+  ];
+}
+
+/**
+ * Implementation of hook_migration_plugins_alter().
+ */
+function lullabot_migrate_media_migration_plugins_alter(&$migrations) {
+  return;
+  foreach ($migrations as $key => &$migration) {
+
+    // Swap in our custom file source that limits files to files in use.
+    if (strpos($key, 'd7_file') !== FALSE) {
+      $migrations[$key]['source']['plugin'] = 'd7_file_used';
+    }
+
+    // Populate the new media field from the original file field value.
+    // The lullabot_create_media plugin will find the matching media entity,
+    // or create one if it doesn't exist, then link to it.
+    $field_list = lullabot_migrate_media_fields();
+    foreach ($field_list as $bundle => $items) {
+      foreach ($items as $file_field_name => $media_field_name) {
+        if (array_key_exists('process', $migration) && array_key_exists($file_field_name, $migration['process'])) {
+          $migrations[$key][$media_field_name] = [
+            'plugin' => 'lullabot_create_media',
+            'source' => $file_field_name,
+          ];
+          unset($migrations[$key][$file_field_name]);
+        }
+      }
+    }
+  }
+}
