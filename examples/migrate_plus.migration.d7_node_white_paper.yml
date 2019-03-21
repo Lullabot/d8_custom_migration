@@ -1,0 +1,90 @@
+uuid: be10cedd-2db8-4a30-8ae4-905879648e8d
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_white_paper
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (White Paper)'
+source:
+  plugin: d7_node_uuid
+  node_type: white_paper
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_white_paper/0/status: comment
+  field_assets_media:
+    plugin: lullabot_create_media
+    source: field_assets
+  field_drupal_planet:
+    plugin: get
+    source: field_drupal_planet
+  field_hero_media:
+    plugin: lullabot_create_media
+    source: field_hero_image
+  field_hero_image_invert:
+    plugin: get
+    source: field_hero_image_invert
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_pdf_media:
+    plugin: lullabot_create_media
+    source: field_pdf
+  field_slug:
+    plugin: get
+    source: field_slug
+  field_topics:
+    plugin: get
+    source: field_topics
+  body:
+    plugin: lullabot_embedded_content
+    source: body
+  field_deck:
+    plugin: lullabot_deck
+    source: field_deck
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: white_paper
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+  optional: {  }

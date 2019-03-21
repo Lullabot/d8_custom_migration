@@ -1,0 +1,86 @@
+uuid: 9537bf1b-ef36-4de8-8e30-7ec0a035a087
+langcode: en
+status: true
+dependencies: {  }
+id: d7_multifield_bio_external
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Multifields (Bio external)'
+source:
+  plugin: multifield_node
+  field_name: field_bio_external
+  lookup_field: field_bio_external_field_bio_external_link_title
+  node_type: bio
+  constants:
+    text: ' is related to '
+    parent: 35
+process:
+  langcode:
+    plugin: default_value
+    default_value: en
+  uid: parent_uid
+  status: parent_status
+  created: parent_created
+  changed: parent_changed
+  title: field_bio_external_link/0/title
+  field_deck/0/value:
+    plugin: concat
+    source:
+      - field_bio_external_link/0/title
+      - constants/text
+      - parent_title
+  body/0/value:
+    plugin: concat
+    source:
+      - field_bio_external_link/0/title
+      - constants/text
+      - parent_title
+  field_external_link:
+    plugin: field_link
+    source: field_bio_external_link
+  field_source: field_bio_external_source
+  field_type: field_bio_external_type
+  field_parent:
+    plugin: migration_lookup
+    migration: d7_node_section
+    source: constants/parent
+  alias:
+    -
+      plugin: machine_name
+      source: field_bio_external_link/0/title
+    -
+      plugin: str_replace
+      search: _
+      replace: '-'
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - '@alias'
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: external
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+  optional: {  }

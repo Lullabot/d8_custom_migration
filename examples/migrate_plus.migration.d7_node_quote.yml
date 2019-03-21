@@ -1,0 +1,58 @@
+uuid: a908caec-1219-40e6-a054-9962bbb65cd6
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_quote
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Quote)'
+source:
+  plugin: d7_node_uuid_revision
+  node_type: quote
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_quote/0/status: comment
+  field_quotation:
+    plugin: get
+    source: field_quotation
+  field_quotation_citation:
+    plugin: get
+    source: field_quotation_citation
+  field_quotation_role:
+    plugin: get
+    source: field_quotation_role
+  field_quotation/0/format:
+    plugin: static_map
+    map:
+      filtered_html: basic_html
+      markdown: markdown
+      plain_text: plain_text
+    default_value: basic_html
+    source: field_quotation/0/format
+destination:
+  plugin: 'entity:node'
+  default_bundle: quote
+migration_dependencies:
+  required:
+    - d7_user
+  optional: {  }

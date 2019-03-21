@@ -1,0 +1,86 @@
+uuid: 52b9b119-473d-40dc-b914-619d1697c933
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_series
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Series)'
+source:
+  plugin: d7_node_uuid
+  node_type: series
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_series/0/status: comment
+  field_assets_media:
+    plugin: lullabot_create_media
+    source: field_assets
+  field_items:
+    plugin: multifield_lookup
+    entity_id_name: nid
+    field_name: field_items
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_related_links:
+    plugin: field_link
+    source: field_related_links
+  field_slug:
+    plugin: get
+    source: field_slug
+  field_topics:
+    plugin: get
+    source: field_topics
+  body:
+    plugin: lullabot_embedded_content
+    source: body
+  field_deck:
+    plugin: lullabot_deck
+    source: field_deck
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: series
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+  optional:
+    - d7_multifield_items

@@ -1,0 +1,121 @@
+uuid: 34a1752d-9484-452d-a69b-10fe69aecb2d
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_case_study
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Case Study)'
+source:
+  plugin: d7_node_uuid
+  node_type: case_study
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_case_study/0/status: comment
+  field_hero_media:
+    plugin: lullabot_create_media
+    source: field_hero_image
+  field_hero_image_invert:
+    plugin: static_map
+    source: field_hero_image_invert
+    map:
+      1: 0
+      0: 1
+    default_value: 0
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_promo_media:
+    plugin: lullabot_create_media
+    source: field_promo_image
+  field_promo_image_invert:
+    plugin: static_map
+    source: field_promo_image_invert
+    map:
+      1: 0
+      0: 1
+    default_value: 0
+  field_promo_text:
+    plugin: get
+    source: field_promo_text
+  field_slug:
+    plugin: get
+    source: field_slug
+  field_topics:
+    plugin: get
+    source: field_topics
+  field_case_study_site_link:
+    plugin: field_link
+    source: field_case_study_site_link
+  field_colour_scheme_primary:
+    plugin: get
+    source: field_colour_scheme_primary
+  field_lead:
+    plugin: get
+    source: field_lead
+  field_assets_media:
+    plugin: lullabot_create_media
+    source: field_assets
+  body:
+    plugin: lullabot_embedded_content
+    source: body
+  field_deck:
+    plugin: lullabot_deck
+    source: field_deck
+  field_lead/0/format:
+    plugin: static_map
+    map:
+      filtered_html: basic_html
+      markdown: markdown
+      plain_text: plain_text
+    default_value: basic_html
+    source: field_lead/0/format
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: case_study
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+  optional: {  }

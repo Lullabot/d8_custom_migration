@@ -1,0 +1,78 @@
+uuid: 87c9760a-d8ca-4620-be68-c9df7d5217df
+langcode: en
+status: true
+dependencies: {  }
+id: d7_multifield_episode_guests
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Multifields (Episode guests - external)'
+source:
+  plugin: multifield_node
+  field_name: field_episode_guests
+  lookup_field: field_episode_guests_field_episode_guests_name_value
+  node_type: episode
+  constants:
+    parent: 1438
+process:
+  langcode:
+    plugin: default_value
+    default_value: en
+  uid: parent_uid
+  status: parent_status
+  created: parent_created
+  changed: parent_changed
+  title: field_episode_guests_name/0/value
+  field_bio_media:
+    plugin: lullabot_create_media
+    source: field_episode_guests_image
+  field_links:
+    plugin: field_link
+    source: field_episode_guests_link
+  body/0/value: field_episode_guests_field_deck/0/value
+  body/0/format:
+    plugin: default_value
+    default_value: restricted_html
+  field_parent:
+    plugin: migration_lookup
+    migration: d7_node_section
+    source: constants/parent
+  alias:
+    -
+      plugin: machine_name
+      source: field_episode_guests_name/0/value
+    -
+      plugin: str_replace
+      search: _
+      replace: '-'
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: constants/parent
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - '@alias'
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: other_bio
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_bio
+  optional: {  }

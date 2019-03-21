@@ -1,0 +1,160 @@
+uuid: 9f54d88c-dced-4f19-ac9b-34481037e6f1
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_episode
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Episode)'
+source:
+  plugin: d7_node_uuid_revision
+  node_type: episode
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_episode/0/status: comment
+  field_assets_media:
+    plugin: lullabot_create_media
+    source: field_assets
+  field_authors:
+    plugin: get
+    source: field_authors
+  field_drupal_planet:
+    plugin: get
+    source: field_drupal_planet
+  field_audio_media:
+    plugin: lullabot_create_media
+    source: field_episode_audio
+  field_episode_explicit:
+    plugin: get
+    source: field_episode_explicit
+  internal_guests:
+    source: field_episode_guests
+    plugin: sub_process
+    process:
+      target_id:
+        -
+          plugin: skip_on_empty
+          method: process
+          source: field_episode_guests_bot_target_id
+        -
+          plugin: migration_lookup
+          migration: d7_node_bio
+  external_guests:
+    source: field_episode_guests
+    plugin: sub_process
+    process:
+      target_id:
+        -
+          plugin: skip_on_empty
+          method: process
+          source: field_episode_guests_name_value
+        -
+          plugin: entity_lookup
+          value_key: title
+          bundle_key: type
+          bundle: other_bio
+          entity_type: node
+          ignore_case: true
+  field_episode_guests:
+    plugin: merge
+    source:
+      - '@external_guests'
+      - '@internal_guests'
+  field_episode_number:
+    plugin: get
+    source: field_episode_number
+  field_itunes_summary:
+    plugin: get
+    source: field_itunes_summary
+  field_legacy_nid:
+    plugin: get
+    source: field_legacy_nid
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_related_links:
+    plugin: field_link
+    source: field_related_links
+  field_slug:
+    plugin: get
+    source: field_slug
+  field_topics:
+    plugin: get
+    source: field_topics
+  field_transcript:
+    plugin: get
+    source: field_transcript
+  body:
+    plugin: lullabot_embedded_content
+    source: body
+  field_deck:
+    plugin: lullabot_deck
+    source: field_deck
+  field_itunes_summary/0/format:
+    plugin: static_map
+    map:
+      filtered_html: basic_html
+      markdown: markdown
+      plain_text: plain_text
+    default_value: basic_html
+    source: field_itunes_summary/0/format
+  field_transcript/0/format:
+    plugin: static_map
+    map:
+      filtered_html: basic_html
+      markdown: markdown
+      plain_text: plain_text
+    default_value: basic_html
+    source: field_transcript/0/format
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: episode
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+    - d7_node_show
+    - d7_node_bio
+  optional:
+    - d7_multifield_episode_guests

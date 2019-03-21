@@ -1,0 +1,176 @@
+uuid: 6948bac9-fbf1-4b52-96ea-2443be19d033
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_bio
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Staff Bio)'
+source:
+  plugin: d7_node_uuid_revision
+  node_type: bio
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_bio/0/status: comment
+  field_bio_active:
+    plugin: get
+    source: field_bio_active
+  field_bio_expertise:
+    plugin: get
+    source: field_bio_expertise
+  field_bio_external:
+    plugin: sub_process
+    source: field_bio_external
+    process:
+      target_id:
+        source: field_bio_external_link_title
+        plugin: entity_lookup
+        value_key: title
+        bundle_key: type
+        bundle: external
+        entity_type: node
+        ignore_case: true
+  field_bio_fact:
+    plugin: get
+    source: field_bio_fact
+  field_bio_media:
+    plugin: lullabot_create_media
+    source: field_bio_image
+  field_bio_link_dribbble:
+    plugin: get
+    source: field_bio_link_dribbble
+  field_bio_link_drupalorg:
+    plugin: get
+    source: field_bio_link_drupalorg
+  field_bio_link_facebook:
+    plugin: get
+    source: field_bio_link_facebook
+  field_bio_link_flickr:
+    plugin: get
+    source: field_bio_link_flickr
+  field_bio_link_github:
+    plugin: get
+    source: field_bio_link_github
+  field_bio_link_googleplus:
+    plugin: get
+    source: field_bio_link_googleplus
+  field_bio_link_lanyrd:
+    plugin: get
+    source: field_bio_link_lanyrd
+  field_bio_link_linkedin:
+    plugin: get
+    source: field_bio_link_linkedin
+  field_bio_link_twitter:
+    plugin: get
+    source: field_bio_link_twitter
+  field_bio_location:
+    plugin: get
+    source: field_bio_location
+  field_bio_map_media:
+    plugin: lullabot_create_media
+    source: field_bio_map
+  field_bio_position:
+    plugin: get
+    source: field_bio_position
+  field_bio_promos:
+    plugin: get
+    source: field_bio_promos
+  field_bio_quote_cite:
+    plugin: get
+    source: field_bio_quote_cite
+  field_bio_quote_text:
+    plugin: get
+    source: field_bio_quote_text
+  field_bio_time_zone:
+    plugin: sub_process
+    source: field_bio_time_zone
+    process:
+      value: value
+  field_hero_media:
+    plugin: lullabot_create_media
+    source: field_hero_image
+  field_hero_image_invert:
+    plugin: static_map
+    source: field_hero_image_invert
+    map:
+      1: 0
+      0: 1
+    default_value: 0
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_slug:
+    plugin: get
+    source: field_slug
+  body:
+    plugin: lullabot_embedded_content
+    source: body
+  field_deck:
+    plugin: lullabot_deck
+    source: field_deck
+  field_bio_fact/0/format:
+    plugin: static_map
+    map:
+      filtered_html: basic_html
+      markdown: markdown
+      plain_text: plain_text
+    default_value: basic_html
+    source: field_bio_fact/0/format
+  field_bio_quote_text/0/format:
+    plugin: static_map
+    map:
+      filtered_html: basic_html
+      markdown: markdown
+      plain_text: plain_text
+    default_value: basic_html
+    source: field_bio_quote_text/0/format
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: bio
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+    - d7_multifield_bio_external
+  optional: {  }

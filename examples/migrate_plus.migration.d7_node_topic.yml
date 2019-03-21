@@ -1,0 +1,72 @@
+uuid: b575a590-5aec-4dcc-9afc-b53c991fc4e3
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_topic
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Topic)'
+source:
+  plugin: d7_node_uuid_revision
+  node_type: topic
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_topic/0/status: comment
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_related_links:
+    plugin: field_link
+    source: field_related_links
+  field_slug:
+    plugin: get
+    source: field_slug
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: topic
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+  optional: {  }

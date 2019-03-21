@@ -1,0 +1,116 @@
+uuid: 35d15306-f8a2-481b-8c65-e66fc20eefe6
+langcode: en
+status: true
+dependencies: {  }
+id: d7_node_webinar
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Nodes (Webinar)'
+source:
+  plugin: d7_node_uuid_revision
+  node_type: webinar
+  constants:
+    slash: /
+process:
+  nid: tnid
+  vid: vid
+  uuid: uuid
+  langcode:
+    plugin: default_value
+    default_value: en
+  title: title
+  uid: node_uid
+  status: status
+  created: created
+  changed: changed
+  promote: promote
+  sticky: sticky
+  revision_uid: revision_uid
+  revision_log: log
+  revision_timestamp: timestamp
+  comment_node_webinar/0/status: comment
+  field_assets_media:
+    plugin: lullabot_create_media
+    source: field_assets
+  field_drupal_planet:
+    plugin: get
+    source: field_drupal_planet
+  field_episode_guests:
+    plugin: multifield_lookup
+    entity_id_name: nid
+    field_name: field_episode_guests
+  field_hero_media:
+    plugin: lullabot_create_media
+    source: field_hero_image
+  field_hero_image_invert:
+    plugin: get
+    source: field_hero_image_invert
+  field_parent:
+    plugin: get
+    source: field_parent
+  field_related_links:
+    plugin: field_link
+    source: field_related_links
+  field_slug:
+    plugin: get
+    source: field_slug
+  field_topics:
+    plugin: get
+    source: field_topics
+  field_webinar_date:
+    plugin: sub_process
+    source: field_webinar_date
+    process:
+      value:
+        plugin: format_date
+        from_format: 'Y-m-d H:i:s'
+        to_format: 'Y-m-d\TH:i:s'
+        source: value
+  field_webinar_duration_mins:
+    plugin: get
+    source: field_webinar_duration_mins
+  field_webinar_registration_link:
+    plugin: field_link
+    source: field_webinar_registration_link
+  field_webinar_link:
+    plugin: field_link
+    source: field_webinar_link
+  body:
+    plugin: lullabot_embedded_content
+    source: body
+  field_deck:
+    plugin: lullabot_deck
+    source: field_deck
+  path/pathauto:
+    plugin: default_value
+    default_value: 0
+  path/langcode:
+    plugin: default_value
+    default_value: und
+  parentid:
+    plugin: migration_lookup
+    migration:
+      - d7_node_section
+      - d7_node_show
+      - d7_node_series
+      - d7_white_paper
+    source: field_parent/0/target_id
+  path/alias:
+    plugin: lullabot_path
+    source:
+      - field_slug/0/value
+      - '@parentid'
+destination:
+  plugin: 'entity:node'
+  default_bundle: webinar
+migration_dependencies:
+  required:
+    - d7_user
+    - d7_node_section
+  optional:
+    - d7_multifield_episode_guests

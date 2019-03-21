@@ -1,0 +1,46 @@
+uuid: 3f547dc3-e7a8-4e40-83d6-ccc8aeda9f7d
+langcode: en
+status: true
+dependencies: {  }
+id: d7_file
+class: Drupal\migrate\Plugin\Migration
+field_plugin_method: null
+cck_plugin_method: null
+migration_tags:
+  - 'Drupal 7'
+  - Content
+migration_group: migrate_drupal_7
+label: 'Public files'
+source:
+  plugin: d7_file_used
+  scheme: public
+  constants:
+    source_base_path: ../files/d7/
+process:
+  fid: fid
+  uuid: uuid
+  filename: filename
+  source_full_path:
+    -
+      plugin: concat
+      delimiter: /
+      source:
+        - constants/source_base_path
+        - filepath
+    -
+      plugin: urlencode
+  uri:
+    plugin: file_copy
+    source:
+      - '@source_full_path'
+      - uri
+  filemime: filemime
+  status: status
+  created: timestamp
+  changed: timestamp
+  uid: uid
+destination:
+  plugin: 'entity:file'
+migration_dependencies:
+  required: {  }
+  optional: {  }
