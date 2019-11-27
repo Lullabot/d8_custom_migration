@@ -9,6 +9,7 @@ use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\MigrateSkipRowException;
+use Drupal\Core\Database\Database;
 
 $GLOBALS['skip_bundles'] = [
   'list',
@@ -336,21 +337,36 @@ function lullabot_migrate_migration_plugins_alter(&$migrations) {
  * Migrate module. Implemented in hook_uninstall().
  */
 function lullabot_migrate_clean_migration() {
-  $success = [];
-  $database_tables = db_query("SHOW TABLES LIKE 'migrate\_%'")->fetchAll();
-  foreach ($database_tables as $table) {
-    $table_name = array_values((array) $table)[0];
-    try {
-      db_query("DROP TABLE " . $table_name)->execute();
-      $success[] = $table_name;
+
+  $tables = Database::getConnection()
+    ->schema()
+    ->findTables('migrate_%');
+  $dropped = [];
+  $skipped = [];
+  $total = count($tables);
+
+  // Do not continue if deletable entries are found.
+  if (empty($tables)) {
+    return t('No deletable tables found.');
+  }
+
+  foreach ($tables as $table) {
+    if (Database::getConnection()
+      ->schema()
+      ->dropTable($table)) {
+      $dropped[] = $table;
     }
-    catch (Exception $e) {
-      $failed[] = $table_name;
+    else {
+      $skipped[] = $table;
     }
   }
-  // Log dropped migration tables.
-  \Drupal::logger('lullabot_migrate')->notice('The following migration tables were removed during uninstall: @tables', [
-    '@tables' => implode(', ', $success),
-  ]);
 
+  \Drupal::logger('dr8')->notice('The following @total tables were dropped during uninstall: @tables', [
+    '@total' => count($dropped),
+    '@tables' => implode(', ', $dropped),
+  ]);
+  \Drupal::logger('dr8')->notice('The following @total tables were skipped during uninstall: @tables', [
+    '@total' => count($skipped),
+    '@tables' => implode(', ', $skipped),
+  ]);
 }
