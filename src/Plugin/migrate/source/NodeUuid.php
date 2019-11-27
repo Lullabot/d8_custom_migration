@@ -20,6 +20,15 @@ class NodeUuid extends Node {
   public function query() {
     $query = parent::query();
     $query->addField('n', 'uuid');
+    // Nodes belonging to migrated types.
+    $query->condition('n.type', MIGRATED_TYPES, 'IN');
+
+    // Blog nodes later than given date.
+    if (isset($this->configuration['node_type']) && $this->configuration['node_type'] == 'blog') {
+      $query->condition('n.created', MIGRATED_EARLIEST, '>=');
+      // Nodes authored by executive team.
+      $query->condition('n.uid', MIGRATED_AUTHORS, 'IN');
+    }
     return $query;
   }
 

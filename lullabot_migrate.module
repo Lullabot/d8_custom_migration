@@ -36,6 +36,31 @@ $GLOBALS['simple_pages'] = [
   52, // Benefits
   1341, // Privacy policy
 ];
+
+// Limit Migration to these types.
+define('MIGRATED_TYPES', [
+  'blog',
+  //'book',
+  //'quote',
+  //'page',
+]);
+
+// Date of earliest node to migrate (first weather report): 9/14/2012.
+define('MIGRATED_EARLIEST', 1347658688);
+
+// Limit authors to get only "official" posts and skip the "what I'm doing"
+// and birthday/anniversary posts.
+define('MIGRATED_AUTHORS', [
+  56, //bskowron
+  28, //jponch
+  26, //matt
+  27, //seth
+  4, //Jeff
+  22, //Karen
+  92, //Kris
+  138, //Ellie
+]);
+
 /**
  * Implmentation of hook_migrate_MIGRATION_ID_prepare_row().
  *
@@ -53,6 +78,13 @@ function lullabot_migrate_migrate_d7_file_prepare_row(Row $row, MigrateSourceInt
   if (strpos($row->getSourceProperty('filepath'), 'webform/') !== FALSE) {
     return FALSE;
   }
+
+  // If a file no longer exists, skip it.
+  $path = '../private/d7' . $row->getSourceProperty('filepath');
+  if (!file_exists($path)) {
+    return FALSE;
+  }
+
 }
 
 // d7_multifield_episode_guests is for non-bot episode guest multifields, to

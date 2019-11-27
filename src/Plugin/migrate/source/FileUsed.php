@@ -8,9 +8,10 @@ use Drupal\migrate_drupal\Plugin\migrate\source\DrupalSqlBase;
 use Drupal\file\Plugin\migrate\source\d7\File;
 
 /**
- * Drupal 7 file source from database.
+ * Drupal 7 file source from database, limited types, dates and authors.
  *
- * Core plugin adapted to restrict imported files to only those in use.
+ * Core plugin adapted to restrict imported files to only those in use on
+ * specific node types, later than given dates.
  *
  * @MigrateSource(
  *   id = "d7_file_used",
@@ -18,28 +19,28 @@ use Drupal\file\Plugin\migrate\source\d7\File;
  * )
  */
 class FileUsed extends File {
-
   /**
    * {@inheritdoc}
    */
   public function query() {
 
     $query = parent::query();
-
-    // Join the file_usage table and restrict the query to fields actually
-    // in use.
+    // Join the file_usage table.
     $query->leftJoin('file_usage', 'u', 'f.fid = u.fid');
+    // Files used on nodes.
+    $query->condition('u.type', 'node', '=');
+    // Files actually in use.
     $query->condition('count', 0, '>');
-
-    // Join the title and alt text fields.
-    //$query->leftJoin('field_data_field_file_image_alt_text', 'alt', 'f.fid = alt.entity_id');
-    //$query->addField('alt', 'field_file_image_alt_text_value', 'alt');
-    //$query->leftJoin('field_data_field_file_image_title_text', 'title', 'f.fid = title.entity_id');
-    //$query->addField('title', 'field_data_field_file_image_title_text_value', 'title');
-
+    // Join the node table.
+    $query->leftJoin('node', 'n', 'u.id = n.nid');
+    // Files used on specific node types.
+    $query->condition('n.type', MIGRATED_TYPES, 'IN');
+    // Files later than earliest weather report.
+    $query->condition('n.created', MIGRATED_EARLIEST, '>=');
+    // Files authored by executive team.
+    $query->condition('n.uid', MIGRATED_AUTHORS, 'IN');
     return $query;
   }
-
   /**
    * {@inheritdoc}
    */
@@ -49,5 +50,5 @@ class FileUsed extends File {
     $ids['fid']['alias'] = 'f';
     return $ids;
   }
-
 }
+
